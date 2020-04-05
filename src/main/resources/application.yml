@@ -1,0 +1,68 @@
+server:
+  port: 8081
+
+wyait:
+  picpath:
+    C:/Users/zjc/image/
+spring:
+  resources:
+    static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/templates/,classpath:/public/,file:${wyait.picpath}
+  # 热部署配置监听重启目录
+  #排除那个目录的文件不需要restart
+  jackson:
+    serialization:
+      WRITE-DATES-AS-TIMESTAMPS: true
+      WRITE-DATE-KEYS-AS-TIMESTAMPS: true
+    generator:
+      WRITE_NUMBERS_AS_STRINGS: true
+  mvc:
+    static-path-pattern: /**
+  devtools:
+    restart:
+      additional-paths: src/main/java,src/main/resources/templates
+      enabled: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: 123456
+    username: root
+    url: jdbc:mysql://localhost:3306/haiyu?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
+
+    hikari:
+      maximum-pool-size: 60
+      minimum-idle: 10
+      connectionTimeout: 60000
+      idleTimeout: 60000
+      maxLifetime: 60000
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1024MB
+#  thymeleaf:
+#    #模板的模式，支持 HTML, XML TEXT JAVASCRIPT
+#    mode: HTML5
+#    #编码 可不用配置
+#    encoding: UTF-8
+#    #开发配置为false,避免修改模板还要重启服务器
+#    cache: false
+#    #配置模板路径，默认是templates，可以不用配置
+#    prefix: classpath:/templates/
+com:
+  zjc:
+    friend:
+      image-path: C:\\Users\\zjc\\image\\
+      create-tmp-file: false
+      web-root: http://localhost:8081/
+      service-url: http://192.168.3.232:8080/
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  type-aliases-package: com.zjc.friend.demo.entity
+  global-config:
+    db-config:
+      id-type: id_worker
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+logging:
+  level:
+    com.zjc.friend.demo.mapper: debug

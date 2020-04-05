@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjc.friend.demo.mapper.ChatRecordMapper">
+
+    <resultMap id="chatId" type="com.zjc.friend.demo.entity.ChatRecord">
+        <result property="id" column="cr_id"/>
+        <result property="createTime" column="ch_create_time"/>
+        <result property="userId" column="user_id"/>
+        <result property="friendId" column="friend_id"/>
+        <result property="message" column="message"/>
+        <result property="recordId" column="record_id"/>
+        <association property="userinfo" javaType="com.zjc.friend.demo.entity.Userinfo"
+                     resultMap="com.zjc.friend.demo.mapper.UserinfoMapper.userinfo">
+            <result property="id" column="u_id"/>
+        </association>
+    </resultMap>
+    <select id="queryChatInfo" parameterType="com.zjc.friend.demo.entity.ChatRecord" resultMap="chatId">
+        SELECT cr.id as cr_id,u.id as u_id, cr.create_time as ch_create_time, u.*,cr.* from chat_record cr
+        LEFT JOIN userinfo u on u.id=cr.user_id
+        where (cr.friend_id=#{friendId} and cr.user_id=#{userId}) or (cr.friend_id=#{userId} and cr.user_id=#{friendId})
+        order by cr.create_time asc
+    </select>
+</mapper>

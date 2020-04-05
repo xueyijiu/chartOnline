@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjc.friend.demo.mapper.UserinfoMapper">
+
+    <resultMap id="userinfo" type="com.zjc.friend.demo.entity.Userinfo">
+        <result property="id" column="id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="address" column="address"/>
+        <result property="password" column="password"/>
+        <result property="petName" column="pet_name"/>
+        <result property="sex" column="sex"/>
+        <result property="username" column="username"/>
+        <result property="userPic" column="user_pic"/>
+    </resultMap>
+
+</mapper>

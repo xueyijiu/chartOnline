@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta charset="UTF-8">
+<title>首页</title>
+<link rel="stylesheet" type="text/css" href="../res/layui/css/layui.css">
+<link rel="stylesheet" type="text/css" href="../res/css/main.css">
+
+<body>
+<div th:replace="html/top::allInfo" style="width:100%;height: 500px" scrolling="no"></div>
+<div class="content whisper-content" style="margin-right: 280px;">
+    <div class="cont">
+        <div class="whisper-list">
+            <div class="item-box" th:each="user,userStat: ${userInfo.info}">
+                <div class="item" th:id="${'item_'+user.id}">
+                    <div class="whisper-title" th:id="${user.userId}" onclick="addFriend(this)">
+                        <i class="layui-icon layui-icon-username"></i><a href="#"><span class="volume"
+                                                                                        th:text="${user.userinfo.username}"></span>&nbsp;&nbsp;
+                        <span class="date" th:text="${#dates.format(user.createTime,'yyyy/MM/dd HH:mm')}"></span></a>
+                        <div class="layui-btn-group" style=" float: right;">
+
+                            <button type="button" class="layui-btn layui-btn-sm layui-btn-primary ">
+                                <i class="layui-icon">&#xe654;</i>
+                            </button>
+
+                            <button type="button" class="layui-btn layui-btn-sm layui-btn-primary">
+                                <i class="layui-icon">&#xe642;</i>
+                            </button>
+
+                            <span th:if="${user.isNotMyself} eq true">
+  <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" th:id="${user.id}" onclick="deleteDy(this)">
+    <i class="layui-icon">&#xe640;</i>
+  </button>
+        </span>
+                        </div>
+                    </div>
+                    <p class="text-cont" th:text="${user.dynaminContent}">
+                    </p>
+                    <div class="img-box" th:each="image:${user.dynamicFiles}">
+                        <img th:if="${not #strings.containsIgnoreCase(image.filePath,'null')}" th:src="${image.filePath}" style="width: 400px; height: 300px;">
+                        <input th:id="${'byId_'+userStat.index}" th:value="${user.id}" type="hidden"/>
+                    </div>
+                    <div class="op-list">
+                        <p class="like"><i class="layui-icon layui-icon-praise"></i><span></span></p>
+                        <p class="off"><i class="layui-icon layui-icon-reply-fill"></i><span>1</span></p>
+                        <p class="off"><span>评论</span><i class="layui-icon layui-icon-down"></i></p>
+                    </div>
+                    <div class="review-version layui-hide">
+                        <div class="form">
+                            <img src="../res/img/header2.png">
+                            <form class="layui-form" id="formDemo">
+                                <div class="layui-form-item layui-form-text">
+                                    <div class="layui-input-block">
+                                        <textarea th:id="${'content_'+userStat.index}" class="layui-textarea content"
+                                                  style="padding: 10px 0 120px 0;"></textarea>
+                                    </div>
+
+                                </div>
+                                <div class="layui-form-item">
+                                    <div class="layui-input-block" style="text-align: right;">
+                                        <button class="layui-btn definite" type="button" th:id="${userStat.index}"
+                                                onclick="submission(this)">確定
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="list-cont" th:id="${'cont_'+userStat.index}">
+                            <div th:each="comments:${user.commentList}" th:id="${'div_'+userStat.index+commentsStat.index}">
+                         <span th:if="${comments.dynamicId eq user.id}" th:id="${'span_'+userStat.index+commentsStat.index}">
+                      <div class="cont" th:id="${'cont_'+commentsStat.index}">
+                          <div class="img">
+                              <img th:src="${comments.petSrc}" alt="" style="height: 50px;width: 50px;">
+                          </div>
+                          <div class="text">
+                              <p class="tit"><span class="name" th:text="${comments.name}"></span>
+                                   <span th:if="${comments.myselfComment} eq true">
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-primary"
+                                            th:id="${userStat.index+''+commentsStat.index}" th:name="${comments.id}" onclick="deleteComment(this)">
+                                    <i class="layui-icon">&#xe640;</i>
+                                    </button>
+        </span>
+                                  <span class="data"
+                                        th:text="${#dates.format(comments.createTime,'yyyy/MM/dd HH:mm')}"></span></p>
+                              <p class="ct" th:text="${comments.commentContent}"></p>
+                          </div>
+                      </div>
+            </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--      <div id="demo" style="text-align: center;"></div>-->
+    </div>
+</div>
+
+<div th:replace="/html/foot :: copyright" style="width: 100%;height: 300px" frameborder="0" height="300px"></div>
+<!--  <iframe src="foot.html" width="100%" scrolling="no"  frameborder="0" height="300px"></iframe>-->
+<script type="text/javascript" src="../res/layui/layui.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript">
+    layui.config({
+        base: '../res/js/util/'
+    }).use(['element', 'laypage', 'form', 'menu'], function () {
+        element = layui.element, laypage = layui.laypage, form = layui.form, menu = layui.menu;
+        laypage.render({
+            elem: 'demo'
+            , count: 70 //数据总数，从服务端得到
+        });
+        menu.init();
+        menu.off();
+        menu.submit()
+    });
+
+    function addFriend(e) {
+        if (e.id != null) {
+            window.location.href = "/friend-request/queryAllUser?id=" + e.id
+        }
+    }
+    function submission(e) {
+        var id = e.id;
+        var dyId = $("#byId_" + id).val();
+        var content = $("#content_" + id).val();
+        if (!content) {
+            alert("请输入评论!");
+            return false;
+        }
+        $.ajax({
+            //几个参数需要注意一下
+            type: "POST",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/comment/addComment",//url
+            data: {id: dyId, comment: content},
+            success: function (result) {
+                console.log(result);//打印服务端返回的数据(调试用)
+                if (result.status == 200) {
+                    var data = result.data;
+                    var str='<div id="div_'+data.id+'"> <span id="span_'+id+'"> <div class="cont"> <div class="img">'
+                    str += '<img src="' + data.petSrc + '" alt=""> </div>';
+                    str += '<div class="text">';
+                    str += ' <p class="tit"><span class="name">'+data.name+'</span>';
+                    str += '<button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="'+data.id+'" name="'+data.id+'" onclick="deleteComment(this)"><i class="layui-icon">&#xe640;</i></button>' +
+                        '<span class="data">'+data.timeString+'</span></p>';
+                    str += '<p class="ct">'+data.commentContent+'</p>';
+                    str += '</div>';
+                    str+='</span></div>';
+                    $("#cont_"+id).append(str);
+                } else {
+                    alert(result.message)
+                };
+            },
+            error: function () {
+                alert("异常！" + result);
+            }
+        });
+    }
+    function deleteComment(e) {
+        layer.confirm('真的删除该评论？', function (index) {
+            var id = e.name;
+            var span_id=e.id;
+            $.ajax({
+                type: "POST",//方法类型
+                dataType: "json",//预期服务器返回的数据类型
+                url: "/comment/deleteComment",//url
+                data: {id: id},
+                success: function (result) {
+                    if (result.status == 200) {
+                        alert(span_id)
+                        $("#div_" + span_id).remove();
+                    }
+                },
+                error: function () {
+                    alert("异常！" + result);
+                }
+            })
+            layer.close(index);
+            return false;
+        })
+    }
+</script>
+</body>
+</html>
