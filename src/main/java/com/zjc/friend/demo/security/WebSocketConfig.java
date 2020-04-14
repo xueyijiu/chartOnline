@@ -8,11 +8,14 @@ package com.zjc.friend.demo.security;
  * @Version: $
  */
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+
 
 /**
  * webscoket服务端配置
@@ -21,15 +24,27 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
  */
 
 @Configuration
+@EnableScheduling
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
+
+    @Autowired
+    private SecurityInterceptor securityInterceptor;
+
+    @Autowired
+    private MyPrincipalHandshakeHandler myDefaultHandshakeHandler;
+    @Autowired
+    private AuthHandshakeInterceptor sessionAuthHandshakeInterceptor;
     /**
      * 注册端点，发布或者订阅消息的时候需要连接此端点
      * setAllowedOrigins 非必须，*表示允许其他域进行连接
      * withSockJS  表示开始sockejs支持
      */
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/endpoint-websocket").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/endpoint-websocket")
+                .addInterceptors(sessionAuthHandshakeInterceptor)
+                .setHandshakeHandler(myDefaultHandshakeHandler)
+                .setAllowedOrigins("*").withSockJS();
     }
 
     /**
@@ -43,5 +58,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
         registry.setUserDestinationPrefix("/user/");
         registry.setApplicationDestinationPrefixes("/app");
     }
+
+
 
 }

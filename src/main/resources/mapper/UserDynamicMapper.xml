@@ -33,8 +33,6 @@
             <result property="dynamicId" column="dynamic_id"/>
             <result property="imageName" column="image_name"/>
         </collection>
-
-
     </resultMap>
 
 
@@ -52,5 +50,29 @@
             </if>
 
         ORDER BY ud.create_time desc
+    </select>
+
+    <select id="queryDynamic" parameterType="com.zjc.friend.demo.dto.UserDynamicDto" resultMap="userDynamicDto">
+        select u.id u_id,ud.id ud_id,u.username,u.user_pic,u.sex,dy.id as dy_id,dy.file_path,ud.create_time ud_create_time,ud.* from user_dynamic ud
+        LEFT JOIN userinfo u on ud.user_id=u.id
+        left Join dynamic_file dy on dy.dynamic_id=ud.id
+        <where>
+            <if test="dynamic.userIds!=null and dynamic.userIds.size>0">
+                ud.user_id in
+                <foreach collection="dynamic.userIds" item="id" open="(" close=")" separator=",">
+                  #{id}
+                </foreach>
+            </if>
+            <if test="dynamic.dynaminContent!=null and dynamic.dynaminContent!=''">
+               and  ud.dynamin_content like "%"#{dynamic.dynaminContent}"%"
+            </if>
+            <if test="dynamic.createTime!=null ">
+             and  <![CDATA[and ud.create_time >= str_to_date(#{dynamic.createTime},'%Y-%m-%d %H:%i:%s')]]>
+            </if>
+<!--            <if test="dynamic.endTime!=null">-->
+<!--               <![CDATA[and ud.create_time <= str_to_date(#{dynamic.endTime},'%Y-%m-%d %H:%i:%s')]]>-->
+<!--            </if>-->
+        </where>
+        order by create_time desc
     </select>
 </mapper>

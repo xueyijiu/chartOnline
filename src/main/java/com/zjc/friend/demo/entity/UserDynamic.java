@@ -3,7 +3,9 @@ package com.zjc.friend.demo.entity;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -56,6 +58,9 @@ public class UserDynamic implements Serializable {
      * 动态内容
      */
     private String dynaminContent;
+
+    @TableField(exist = false)
+    private List<Long> userIds;
 
 
 }

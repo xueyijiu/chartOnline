@@ -1,5 +1,6 @@
 package com.zjc.friend.demo.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zjc.friend.demo.dto.UserDynamicDto;
 import com.zjc.friend.demo.entity.Userinfo;
@@ -17,5 +18,18 @@ import java.util.List;
  */
 public interface UserinfoMapper extends BaseMapper<Userinfo> {
 
+    /**
+     * 通过username查找user信息
+     * @param userName
+     * @return
+     */
+    Userinfo findByUserName(String userName);
+
+    /**
+     * 获取全部用户信息
+     * Ipage（分页）
+     * @return
+     */
+    IPage<Userinfo> getAllUsers(Page page);
 
 }

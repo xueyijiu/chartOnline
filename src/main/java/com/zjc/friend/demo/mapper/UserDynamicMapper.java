@@ -19,5 +19,18 @@ import java.util.List;
  */
 public interface UserDynamicMapper extends BaseMapper<UserDynamic> {
 
+    /**
+     * 查找动态信息
+     * @param ids
+     * @return
+     */
     List<UserDynamicDto> queryDynamicInfo(@Param("ids")Long ids);
+
+    /**
+     * 管理端查找动态信息
+     * @param page
+     * @param dynamic
+     * @return
+     */
+    IPage<UserDynamicDto> queryDynamic(Page page,UserDynamic dynamic);
 }

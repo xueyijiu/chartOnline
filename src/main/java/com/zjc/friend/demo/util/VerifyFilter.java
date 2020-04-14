@@ -1,6 +1,6 @@
 package com.zjc.friend.demo.util;
 
-import org.springframework.security.authentication.DisabledException;
+//import org.springframework.security.authentication.DisabledException;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -23,7 +23,7 @@ public class VerifyFilter extends OncePerRequestFilter {
             System.out.println("getVerifyCode:" + verifyCode);
             if (!validateVerify(verifyCode)) {
                 //手动设置异常
-                request.getSession().setAttribute("SPRING_SECURITY_LAST_EXCEPTION", new DisabledException("验证码输入错误"));
+//                request.getSession().setAttribute("SPRING_SECURITY_LAST_EXCEPTION", new DisabledException("验证码输入错误"));
                 // 转发到错误Url
                 request.getRequestDispatcher("/login/error").forward(request, response);
             } else {

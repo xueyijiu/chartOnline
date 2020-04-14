@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -66,6 +67,7 @@ public class Userinfo implements Serializable {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
     /**
@@ -85,6 +87,9 @@ public class Userinfo implements Serializable {
 
     @TableField(exist = false)
     private Boolean myFriend = false;
+
+    @TableField(exist = false)
+    private String role;
 
     /**
      * 用户id
@@ -186,5 +191,29 @@ public class Userinfo implements Serializable {
 
     public void setBirthdayTime(String birthdayTime) {
         this.birthdayTime = birthdayTime;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
+
+    public Boolean getMyFriend() {
+        return myFriend;
+    }
+
+    public void setMyFriend(Boolean myFriend) {
+        this.myFriend = myFriend;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

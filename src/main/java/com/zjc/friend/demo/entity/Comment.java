@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -27,10 +28,6 @@ public class Comment implements Serializable {
 
     private Long id;
 
-    /**
-     * 评论id
-     */
-    private String commentId;
 
     /**
      * 动态id
@@ -45,6 +42,7 @@ public class Comment implements Serializable {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
     /**
@@ -69,20 +67,15 @@ public class Comment implements Serializable {
     @TableField(exist = false)
     private String timeString;
 
+    @TableField(exist = false)
+    private String commentUser;
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getCommentId() {
-        return commentId;
-    }
-
-    public void setCommentId(String commentId) {
-        this.commentId = commentId;
     }
 
     public Long getDynamicId() {

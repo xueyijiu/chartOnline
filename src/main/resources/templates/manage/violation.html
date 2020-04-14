@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>设置权限页面</title>
+
+    <link rel="stylesheet" th:href="@{/manager/css/layui.css}"/>
+    <link rel="stylesheet" th:href="@{/manager/css/style.css}"/>
+    <script th:src="@{/manager/js/jquery.min.js}"></script>
+    <script th:src="@{/manager/js/layui.js}"></script>
+
+</head>
+<body>
+<div class="layui-row" id="assee">
+    <div class="layui-col-md10">
+        <!--layui-from-pane-->
+        <form class="layui-form" action="" style="margin-top:20px">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">违规内容:</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" id="content" required=""
+                           lay-verify="required" autocomplete="off" placeholder="" class="layui-input"/>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">状态:</label>
+                <div class="layui-input-inline">
+                    <select name="modules" lay-verify="required" id="status">
+                        <option value="null">请选择</option>
+                        <option value="true">可用</option>
+                        <option value="false">不可用</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item" style="margin-top:40px">
+            <div class="layui-input-block">
+            <button id="insert-btn" type="button" class="layui-btn  layui-btn-submit " lay-submit="" lay-filter="demo11">确认修改</button>
+            </div>
+            </div>
+
+        </form>
+
+
+    </div>
+</div>
+<script>
+    layui.use(["form", "table", "element"], function () {
+        var $ = layui.jquery;
+        var element = layui.element;
+        var table = layui.table;
+        var form = layui.form;
+        $("#insert-btn").click(function () {
+            var content = $("#content").val();
+            var status = $("#status").val();
+            if(status==null){
+                alert('请选择状态!');
+            }
+            if(content==null){
+                alert('请输入违规字段');
+            }
+            $.ajax({
+                url: '/manage/control-table/insertViolation',//更改用户为管理员请求
+                type: 'post',
+                dataType: 'json',
+                data:{content:content,status:status},
+                success: function (data) {
+                    if (data.status == 200) {
+                        layer.alert("添加成功！", function () {
+                            window.parent.location.reload();//刷新父页面
+                            parent.layer.close(index);//关闭弹出层
+                        });
+                    } else {
+                        layer.alert("您无权限更改");
+                        parent.layer.close(index);//关闭弹出层
+                    }
+                }
+            });
+        });
+
+
+    });
+
+
+</script>
+</body>
+</html>

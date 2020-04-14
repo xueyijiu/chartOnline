@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class FriendCategory implements Serializable {
 
     //    private static final long serialVersionUID = 1L;
+    @JsonSerialize(using= ToStringSerializer.class)
     private Long id;
 
     /**
@@ -47,8 +50,11 @@ public class FriendCategory implements Serializable {
     /**
      * 用户id
      */
+    @JsonSerialize(using= ToStringSerializer.class)
     private Long userId;
 
     @TableField(exist = false)
     private List<FriendRequest> friendRequestList;
+
+
 }

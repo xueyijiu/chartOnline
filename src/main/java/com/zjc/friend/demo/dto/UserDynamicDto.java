@@ -1,5 +1,6 @@
 package com.zjc.friend.demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.zjc.friend.demo.entity.Comment;
 import com.zjc.friend.demo.entity.DynamicFile;
 import com.zjc.friend.demo.entity.Userinfo;
@@ -37,7 +38,13 @@ public class UserDynamicDto {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
+
+    /**
+     * 创建时间
+     */
+    private Date endTime;
 
     /**
      * 删除状态，0为未删除，1为删除
@@ -49,6 +56,8 @@ public class UserDynamicDto {
      */
     private String dynaminContent;
 
+    private String username;
+
     private List<DynamicFile> dynamicFiles;
 
     private List<Comment> commentList;
@@ -56,6 +65,8 @@ public class UserDynamicDto {
     private Boolean isNotMyself = false;
 
     private Userinfo userinfo;
+
+    private String deleteStatusString;
 
     public Long getId() {
         return id;
@@ -137,4 +148,27 @@ public class UserDynamicDto {
         this.userinfo = userinfo;
     }
 
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getDeleteStatusString() {
+        return deleteStatusString;
+    }
+
+    public void setDeleteStatusString(String deleteStatusString) {
+        this.deleteStatusString = deleteStatusString;
+    }
 }

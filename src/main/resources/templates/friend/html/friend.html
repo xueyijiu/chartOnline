@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta charset="UTF-8">
+<title>我的好友</title>
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/layui/css/layui.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/css/main.css}">
+
+<!--头部-->
+<body>
+<div th:replace="/friend/html/top::allInfo" style="width:100%;height: 500px" scrolling="no"></div>
+<div class="layui-tab" style="margin-left: 170px;">
+    <ul class="layui-tab-title" style="margin-left: 200px; width: 70%;">
+        <li class="layui-this">好友列表</li>
+        <li>好友申请<span th:text="${'('+info.all+')'}" style="color: red"></span></li>
+        <li>分组管理</li>
+    </ul>
+    <div class="layui-tab-content">
+        <div class="layui-tab-item layui-show">
+            <div class="layui-collapse" lay-accordion style="margin-left: 200px;width: 70%;">
+                <div class="layui-colla-item" th:each="category:${info.category}">
+                    <h2 class="layui-colla-title" th:text="${category.categoryName}" ></h2>
+                    <div class="layui-colla-content layui-show " th:each="friendRequest:${category.friendRequestList}"
+                         th:name="${friendRequest.friendId}" th:id="${'fri_'+friendRequest.id}">
+                        <img th:src="${friendRequest.userinfo.userPic}" width="60px" height="60px" class="layui-circle"><a
+                            href="javascript:void(0)">
+                        <span style="color: red;" th:text="${friendRequest.remark}==null?${friendRequest.userinfo.username}:${friendRequest.remark}"
+                              th:id="${friendRequest.userinfo.id}" onclick="checkFriedInfo(this)">
+    </span></a> &nbsp;&nbsp;&nbsp;<span th:text="${friendRequest.userinfo.sex}"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="javascript:void(0)">
+                            <button type="button" class="layui-btn layui-btn-sm" th:name="${friendRequest.userinfo.id}"
+                                    onclick="betFriend(this)">
+                                <i class="layui-icon">&#xe63a;<span th:text="${friendRequest.messageCount}!=0?${friendRequest.messageCount}:''"></span></i>
+                            </button>
+                        </a>
+                        <a href="">
+                            <button type="button" class="layui-btn layui-btn-sm" th:id="${friendRequest.id}"
+                                    onclick="deleteFriend(this);return false;">
+                                <i class="layui-icon">&#xe640;</i>
+                            </button>
+                        </a>
+                        <a href="javascript:void(0);">
+                            <button type="button" th:id="${category.id}" th:name="${friendRequest.id}"
+                                    class="layui-btn layui-btn-sm" onclick="sortMove(this)">
+                                <i class="layui-icon">&#xe623;</i>
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-collapse" lay-accordion style="margin-left: 200px;width: 70%;">
+                <div class="layui-colla-item">
+                    <div class="layui-colla-content layui-show" th:each="request:${info.request}">
+                        <img th:src="${request.userinfo.userPic}" width="60px" height="60px" class="layui-circle">&nbsp;&nbsp;&nbsp;<a
+                            href=""><span style="color: red;" th:text="${request.userinfo.username}">
+                    </span></a> <span th:text="${request.userinfo.sex}"></span>&nbsp;&nbsp;&nbsp;&nbsp;申请添加好友
+                        <span th:if="${request.userId ne request.userinfo.id}" style="margin-left: 100px;
+                            color: #6d6161;" >已发送验证消息</span>
+                        <div style="float: right; margin-top: 15px;"
+                             th:if="${request.requestStatus}eq 0">
+                            <a href="javascript:void(0)" th:if="${request.userId eq request.userinfo.id}">
+                                <button type="button" th:name="${request.id}" class="layui-btn layui-btn-sm agrBtn"
+                                        onclick="friendAgreeSort(this)">
+                                    同意
+                                </button>
+                            </a>
+                            <a href="" th:if="${request.userId eq request.userinfo.id}">
+                                <button type="button" th:name="${request.id}"
+                                        class="layui-btn layui-btn-sm  layui-btn-danger" onclick="agree(this,2)">拒绝
+                                </button>
+                            </a>
+                        </div>
+                        <div style="float: right; margin-top: 15px;" th:if="${request.requestStatus} eq 1">
+                            <a href="javascript:void(0)">
+                                <button type="button" class="layui-btn layui-btn-disabled layui-btn-radius">
+                                    已同意
+                                </button>
+                            </a>
+                        </div>
+
+                        <div style="float: right; margin-top: 15px;" th:if="${request.requestStatus} eq 2">
+                            <a href="">
+                                <button type="button" class="layui-btn layui-btn-disabled layui-btn-radius">
+                                    已拒绝
+                                </button>
+                            </a>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-tab-item">
+            <div style="margin-left: 200px;width: 70%;">
+                <form class="layui-form" action="">
+                    <div class="layui-input-inline">
+                        <input type="text" name="categoryName" required lay-verify="required" placeholder="请输入分组名"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline">
+                        <button type="button" class="layui-btn" onclick="insertBtn()">新增</button>
+                    </div>
+                </form>
+                <table class="layui-table">
+                    <colgroup>
+                        <col width="50">
+                        <col width="100">
+                        <col width="50">
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>分组名称</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="cate1:${info.category}" th:id="${'tr_'+cate1.id}">
+                        <td th:text="${cate1.categoryName}" th:id="${'td_'+cate1Stat.index}"></td>
+                        <td th:text="${#dates.format(cate1.createTime,'yyyy/MM/dd HH:mm')}"></td>
+                        <td><a href="javascript:void(0)">
+                            <button type="button" class="layui-btn layui-btn-sm" th:id="${cate1Stat.index}"
+                                    th:name="${cate1.id}" onclick="updateCategory(this)">编辑
+                            </button>
+
+                        </a>&nbsp;&nbsp;&nbsp;<a>
+                            <button type="button" th:name="${cate1.id}" class="layui-btn layui-btn-sm  layui-btn-danger"
+                                    onclick="deleteCategory(this)">删除
+                            </button>
+                        </a></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<!--分组管理-->
+
+<!--底部-->
+<script type="text/javascript" th:src="@{/friend/res/layui/layui.js}"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script>
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+    layui.use(['form', 'upload'], function () {
+        var form = layui.form;
+
+        form.render();
+
+    });
+
+    function insertBtn() {
+        var val = $("input[name='categoryName']").val();
+        if (val != null && val.length>0) {
+            $.ajax({
+                url: "/friend-category/insertCategory",
+                type: "post",
+                dataType: "json",
+                data: {categoryName: val},
+                success: function (data) {
+                    if (data.status == 200) {
+                        layer.msg('添加成功!');
+                        var str = '<tr id="tr_'+data.data.id+'"> <td>' + data.data.categoryName + '</td> <td>' + data.data.createTime + '</td> <td><a href="javascript:void(0)"> ' +
+                            '<button type="button" class="layui-btn layui-btn-sm" onclick="updateCategory()">编辑</button></a>&nbsp;&nbsp;&nbsp;<a> ' +
+                            '<button type="button" class="layui-btn layui-btn-sm   layui-btn-danger" name="'+data.data.id+'" onclick="deleteCategory(this)">删除</button></a></td></tr>'
+                        $("tbody").append(str);
+                    }
+                }
+            })
+        }else{
+            alert("请输入新增组名");
+        }
+    }
+
+    function checkFriedInfo(e) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                title: '好友资料',
+                type: 1,
+                content: $('#FriendInfo'),
+                area: ['600px', '500px'],
+                success: function (index, layero) {
+                    $.get("/userinfo/queryUserById?id=" + e.id, function (data) {
+                        if (data.status == 200) {
+                            $("#sendMessage").attr("name", e.id);
+                            $("#rImage").attr("src", data.data.userPic);
+                            $("#rName").html(data.data.username);
+                            $("#rSex").html(data.data.sex);
+                            $("#rBirthday").html(data.data.birthday);
+                            $("#rAddress").html(data.data.address);
+                            console.log(data)
+                        }
+                    })
+                }
+            })
+
+        })
+    };
+
+    /**
+     * 点击同意好友弹窗
+     * @param e
+     */
+    function friendAgreeSort(e) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                title: '好友分组',
+                type: 1,
+                content: $('#friendAgreeSort'),
+                area: ['400px', '300px'],
+                success: function (layero, index) {
+                    //清空原有select内的数据
+                    $("#centerNameSelect").empty();
+                    $.ajax({
+                        url: "/friend-category/queryCateoryList",
+                        type: "post",
+                        dataType: "json",
+                        async: false,
+                        data: {catId: e.id},
+                        success: function (data) {
+                            console.log(data);
+                            var optionstring="";
+                            if (data.status == 200) {
+                                $.each(data.data, function (index, item) {
+                                        var id = data.data[index].id;
+                                        var text = data.data[index].categoryName;
+                                        optionstring += "<option value='" + id + "'>" + text + "</option>";
+                                });
+                                $("#centerNameSelect").append("<option value='null'>请选择</option>");
+                                $("#centerNameSelect").append(optionstring);
+                                layui.form.render('select')
+                                $("#agrees").attr("name", e.name);
+                                // $("#agree").attr("editId", e.id);
+
+                            } else {
+                                layui.use('layer', function () {
+                                    var layer = layui.layer;
+                                    layer.msg('你还没有添加分组');
+                                });
+                            }
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            // alert(errorThrown);
+                        }
+                    });
+                }
+            })
+
+        })
+    };
+
+    /**
+     * 移动分组
+     * @param e
+     */
+    function sortMove(e) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                title: '分组移动',
+                type: 1,
+                content: $('#sortMove'),
+                area: ['400px', '300px'],
+                success: function () {
+                    //清空原有select内的数据
+                    $("#city").empty();
+                    $.ajax({
+                        url: "/friend-category/queryCateoryList",
+                        type: "post",
+                        dataType: "json",
+                        async: false,
+                        data: {catId: e.id},
+                        success: function (data) {
+                            console.log(data);
+                            var optionstring="";
+                            if (data.status == 200) {
+                                $.each(data.data, function (index, item) {
+                                        var id = data.data[index].id;
+                                        var text = data.data[index].categoryName;
+                                        optionstring += "<option value='" + id + "'>" + text + "</option>";
+                                });
+                                $("#city").append("<option value='null'>请选择</option>");
+                                $("#city").append(optionstring);
+                                layui.form.render('select')
+                                $("#moveId").attr("name", e.name);
+                                $("#moveId").attr("editId", e.id);
+
+                            } else {
+                                layui.use('layer', function () {
+                                    var layer = layui.layer;
+                                    layer.msg('你还没有添加分组');
+                                });
+                            }
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            // alert(errorThrown);
+                        }
+                    });
+
+                }
+            })
+
+        })
+    };
+
+    function updateCategory(e) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                title: '编辑分组',
+                type: 1,
+                content: $('#updateCategory'),
+                area: ['400px', '200px'],
+                success: function (data) {
+                    var html = $("#td_"+e.id).text();
+                    $("[name=categoeyId]").val(html);
+                    $("[name=categoeyId]").attr("id", e.name);
+                }
+            })
+
+        })
+    };
+
+    function deleteCategory(e) {
+        layer.confirm('是否删除分组?', function (index) {
+            $.ajax({
+                url: "/friend-category/deleteCatgory",
+                type: "post",
+                dataType: "json",
+                data: {id: e.name},
+                success: function (data) {
+                    console.log(data);
+                    if (data.status == 200) {
+                        layui.use('layer', function () {
+                            var layer = layui.layer;
+                            layer.msg('删除成功!');
+                        });
+                        $("#tr_" + e.name).remove();
+                    } else {
+                        layui.use('layer', function () {
+                            var layer = layui.layer;
+                            layer.msg('删除失败');
+                        });
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    // alert(errorThrown);
+                }
+            })
+            layer.close(index)
+        })
+    }
+
+    function agree(e, a) {
+        var id = e.name;
+        var commentName=$("#commentName").val();
+        var catId=$("#centerNameSelect").val();
+        if(catId==null){
+            alert("请选择分组!");
+        }
+        $.ajax({
+            //几个参数需要注意一下
+            type: "post",//方法类型
+            dataType: "json",//预期服务器返回的数据类型
+            url: "/friend-request/updateApplyFriend",//url
+            data: {id: id, status: a,catId:catId,commentName:commentName},
+            success: function (result) {
+                if (result.status == 200) {
+                    layui.use('layer', function () {
+                        var layer = layui.layer;
+                        layer.msg('操作成功');
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    });
+                }
+            }
+        })
+    }
+
+    /**
+     * 删除好友
+     * @param e
+     */
+    function deleteFriend(e) {
+        var id = e.id;
+        layer.confirm('确定要删除好友吗？', {
+            btn: ['确定', '取消']
+        }, function () {
+            $.get("/friend-request/deleteFriend", {"id": e.id},
+                function (data) {
+                    if (data.status == 200) {
+                        layui.use('layer', function () {
+                            var layer = layui.layer;
+                            layer.msg('更新成功');
+                            setTimeout(function () {
+                                $("#fri_" + e.id).remove();
+                            }, 2000);
+
+                        })
+                    }
+                }
+            );
+            return false;
+        })
+    }
+
+    function moveCategory(e) {
+        var val = $("#city").val();
+        if (val == null) {
+            return;
+        }
+        $.ajax({
+            url: "/friend-category/moveCatgoey",
+            type: "post",
+            dataType: "json",
+            data: {friendId: e.name, catgoeyId: val},
+            success: function (data) {
+                console.log(data);
+                if (data.status == 200) {
+                    layui.use('layer', function () {
+                        var layer = layui.layer;
+                        layer.msg('添加成功!');
+                    });
+                } else {
+                    layui.use('layer', function () {
+                        var layer = layui.layer;
+                        layer.msg('添加失败');
+                    });
+                }
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                // alert(errorThrown);
+            }
+        });
+    }
+
+    function betFriend(e) {
+        window.location.href = "/chat-record/queryChatInfo?id=" + $(e).attr("name")
+    }
+
+    function btnSubmin() {
+        var cateVal = $("[name=categoeyId]").val();
+        var id = $("[name=categoeyId]").attr("id");
+        if (cateVal == null) {
+            alert("名字不能为空");
+            return false;
+        }
+        $.ajax({
+            url: "/friend-category/updateCategory",
+            type: "post",
+            dataType: "json",
+            data: {name: cateVal, id: id},
+            success: function (data) {
+                console.log(data);
+                if (data.status == 200) {
+                    layui.use('layer', function () {
+                        var layer = layui.layer;
+                        layer.msg('添加成功!');
+                    });
+                } else {
+                    layui.use('layer', function () {
+                        var layer = layui.layer;
+                        layer.msg('添加失败');
+                    });
+                }
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                // alert(errorThrown);
+            }
+        });
+    }
+</script>
+
+<!--底部-->
+
+
+<div th:replace="/friend/html/foot :: copyright" style="width: 100%;height: 300px" frameborder="0" height="300px"></div>
+
+
+<div id="FriendInfo" style="display: none;">
+    <div style="margin-left: 120px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label"></label>
+            <img th:src="@{friend/res/img/timg.jpg}" id="rImage" width="100px" height="100px"/>
+
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <label>昵称：</label>
+
+                <span id="rName">小凳子</span>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <label>性别：</label>
+                <span id="rSex">男</span>
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <label>生日：</label>
+                <span id="rBirthday">1995-02-06</span>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <label>地址：</label>
+                <span id="rAddress">遵义医科大学</span>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" id="sendMessage" name="" onclick="betFriend(this)">发送信息</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--好友分组弹窗-->
+<div id="friendAgreeSort" style="margin-top:50px;display: none;">
+    <form class="layui-form" action="">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="commentName"  id="commentName" required lay-verify="required" placeholder="请输入备注"
+                       autocomplete="off" class="layui-input commentName">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">分组：</label>
+            <div class="layui-input-inline">
+                <select name="city" id="centerNameSelect" lay-verify="" class="layui-input">
+                    <!--  <option value="">家人</option>-->
+                    <!--  <option value="">朋友</option>-->
+                    <!--  <option value="">爱人</option>-->
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" id="agrees" type="button" onclick="agree(this,1)">立即提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+<!--编辑分组弹窗-->
+<div id="updateCategory" style="margin-top:20px;display: none;">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">分组名：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="categoeyId" required lay-verify="required" value="" autocomplete="off"
+                       class="layui-input" style="border: none;">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo" id="" onclick="btnSubmin()">提交</button>
+
+            </div>
+        </div>
+    </form>
+</div>
+<!--移动分组弹窗-->
+<div id="sortMove" style="margin-top:50px;display: none;">
+    <form class="layui-form" action=" ">
+        <div class="layui-form-item">
+            <label class="layui-form-label">移动到：</label>
+            <div class="layui-input-inline">
+                <select name="city1" id="city" lay-verify="" class="layui-input">
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" id="moveId" lay-submit lay-filter="formDemo" onclick="moveCategory(this)">
+                    立即提交
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+</body>
+</html>

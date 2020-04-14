@@ -9,12 +9,6 @@ spring:
     static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/templates/,classpath:/public/,file:${wyait.picpath}
   # 热部署配置监听重启目录
   #排除那个目录的文件不需要restart
-  jackson:
-    serialization:
-      WRITE-DATES-AS-TIMESTAMPS: true
-      WRITE-DATE-KEYS-AS-TIMESTAMPS: true
-    generator:
-      WRITE_NUMBERS_AS_STRINGS: true
   mvc:
     static-path-pattern: /**
   devtools:
@@ -26,13 +20,6 @@ spring:
     password: 123456
     username: root
     url: jdbc:mysql://localhost:3306/haiyu?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true
-
-    hikari:
-      maximum-pool-size: 60
-      minimum-idle: 10
-      connectionTimeout: 60000
-      idleTimeout: 60000
-      maxLifetime: 60000
   servlet:
     multipart:
       max-file-size: 100MB
@@ -51,8 +38,8 @@ com:
     friend:
       image-path: C:\\Users\\zjc\\image\\
       create-tmp-file: false
-      web-root: http://localhost:8081/
-      service-url: http://192.168.3.232:8080/
+      web-root: http://localhost:8081/pic/
+      web-root1: http://localhost:8081/
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*Mapper.xml

@@ -14,11 +14,15 @@ import java.util.Date;
 @Data
 public class InMessage {
 
+    //发送人
     private String from;
 
+    //过去信息的人
     private String to;
 
+    //内容
     private String content;
 
+    //时间
     private Date time;
 }

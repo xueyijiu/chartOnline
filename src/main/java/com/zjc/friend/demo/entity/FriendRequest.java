@@ -50,6 +50,8 @@ public class FriendRequest implements Serializable {
      */
     private Date createTime;
 
+    private String remark;
+
     /**
      * 申请状态，0为未处理，1为同意，2为拒绝
      */
