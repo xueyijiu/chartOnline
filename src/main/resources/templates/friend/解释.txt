@@ -1,0 +1,8 @@
+相册功能:album.html
+好友管理（用户）：friend.html
+动态功能：dynamic.html
+我的动态：Mydynamic.html
+注册：register.html
+头部：top.html
+底部：foot.html
+好友聊天：chatRecord.html

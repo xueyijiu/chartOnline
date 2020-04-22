@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjc.friend.demo.mapper.UserDynamicMapper">
+
+    <resultMap id="userDynamicDto" type="com.zjc.friend.demo.dto.UserDynamicDto">
+        <result property="id" column="ud_id"/>
+        <result property="createTime" column="ud_create_time"/>
+        <result property="deleteStatus" column="delete_status"/>
+        <result property="dynaminContent" column="dynamin_content"/>
+        <result property="userId" column="user_id"/>
+
+        <association property="userinfo" javaType="com.zjc.friend.demo.entity.Userinfo">
+            <result property="id" column="user_id_id"/>
+            <result property="address" column="address"/>
+            <!--            <result property="password" column="password"/>-->
+            <result property="petName" column="pet_name"/>
+            <result property="sex" column="sex"/>
+            <result property="username" column="username"/>
+            <result property="userPic" column="user_pic"/>
+        </association>
+
+        <collection property="commentList" ofType="com.zjc.friend.demo.entity.Comment">
+            <result property="dynamicId" column="dynamic_id"/>
+            <result property="commentContent" column="comment_content"/>
+            <result property="createTime" column="c_create_time"/>
+            <result property="userId" column="d_user_id"/>
+            <result property="commentUserId" column="comment_user_id"/>
+            <result property="id" column="comment_id"/>
+        </collection>
+
+        <collection property="dynamicFiles" ofType="com.zjc.friend.demo.entity.DynamicFile">
+            <result property="filePath" column="file_path"/>
+            <result property="dynamicId" column="dynamic_id"/>
+            <result property="imageName" column="image_name"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="queryDynamicInfo" resultMap="userDynamicDto">
+        select ud.id ud_id, u.id as user_id_id,ud.create_time ud_create_time,
+        ud.*,u.*,df.* from user_dynamic ud
+        left JOIN dynamic_file df on df.dynamic_id=ud.id
+--         LEFT JOIN `comment` c on ud.id=c.dynamic_id
+        left join userinfo u on u.id=ud.user_id
+        where
+             ud.delete_status='0'
+            <if test="ids!=null">
+                and  ud.user_id =#{ids}
+            </if>
+        ORDER BY ud.create_time desc
+    </select>
+
+    <select id="queryDynamic" parameterType="com.zjc.friend.demo.dto.UserDynamicDto" resultMap="userDynamicDto">
+        select u.id u_id,ud.id ud_id,u.username,u.user_pic,u.sex,dy.id as dy_id,dy.file_path,ud.create_time ud_create_time,ud.* from user_dynamic ud
+        LEFT JOIN userinfo u on ud.user_id=u.id
+        left Join dynamic_file dy on dy.dynamic_id=ud.id
+        <where>
+            <if test="dynamic.userIds!=null and dynamic.userIds.size>0">
+                ud.user_id in
+                <foreach collection="dynamic.userIds" item="id" open="(" close=")" separator=",">
+                  #{id}
+                </foreach>
+            </if>
+            <if test="dynamic.dynaminContent!=null and dynamic.dynaminContent!=''">
+               and  ud.dynamin_content like "%"#{dynamic.dynaminContent}"%"
+            </if>
+            <if test="dynamic.createTime!=null ">
+             and  <![CDATA[and ud.create_time >= str_to_date(#{dynamic.createTime},'%Y-%m-%d %H:%i:%s')]]>
+            </if>
+<!--            <if test="dynamic.endTime!=null">-->
+<!--               <![CDATA[and ud.create_time <= str_to_date(#{dynamic.endTime},'%Y-%m-%d %H:%i:%s')]]>-->
+<!--            </if>-->
+        </where>
+        order by create_time desc
+    </select>
+</mapper>

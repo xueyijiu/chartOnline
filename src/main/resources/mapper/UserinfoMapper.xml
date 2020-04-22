@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjc.friend.demo.mapper.UserinfoMapper">
+
+    <resultMap id="userinfo" type="com.zjc.friend.demo.entity.Userinfo">
+        <result property="id" column="id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="address" column="address"/>
+        <result property="password" column="password"/>
+        <result property="petName" column="pet_name"/>
+        <result property="sex" column="sex"/>
+        <result property="username" column="username"/>
+        <result property="userPic" column="user_pic"/>
+    </resultMap>
+
+    <resultMap id="userMap" type="com.zjc.friend.demo.entity.Userinfo">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="address" column="address"/>
+        <result property="password" column="password"/>
+        <result property="petName" column="pet_name"/>
+        <result property="sex" column="sex"/>
+        <result property="username" column="username"/>
+        <result property="userPic" column="user_pic"/>
+        <collection property="roles" ofType="com.zjc.friend.demo.entity.SysRole">
+            <result column="name" property="name"/>
+            <result column="role_id" property="id"/>
+        </collection>
+    </resultMap>
+
+    <select id="findByUserName" resultMap="userMap" parameterType="java.lang.String">
+        select u.*
+        ,r.name,r.id role_id
+        from userinfo u
+        LEFT JOIN sys_user_role sru on u.id= sru.user_id
+        LEFT JOIN sys_role r on sru.role_id=r.id
+        where username= #{username}
+    </select>
+
+    <select id="getAllUsers" resultMap="userMap">
+        select u.*
+        ,r.name
+        from userinfo u
+        LEFT JOIN sys_user_role sru on u.id= sru.user_iD
+        LEFT JOIN sys_role r on sru.role_id=r.id
+        where u.status='1'
+    </select>
+</mapper>

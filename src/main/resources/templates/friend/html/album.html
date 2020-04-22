@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<title>相册</title>
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/layui/css/layui.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/css/main.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/my-page/my-page.css}">
+
+<body>
+<div th:replace="/friend/html/top::allInfo" style="width:100%;height: 500px" scrolling="no"></div>
+<div class="album-content w1000 layer-photos-demo" id="layer-photos-demo">
+    <div class="layui-upload" style="margin-top:-50px;">
+        <label class="layui-form-label">标题：</label>
+        <div class="layui-input-inline">
+            <input type="text" name="title" required lay-verify="required" id="title" placeholder="请输入标题"
+                   autocomplete="off" class="layui-input">
+        </div>
+        <button type="button" class="layui-btn layui-btn-normal" id="testList">选择文件</button>
+         <button type="button"  class="layui-btn" id="testListAction">开始上传</button>
+        <div class="layui-upload-list">
+            <table class="layui-table">
+                <thead>
+                <tr>
+                    <th>文件名</th>
+                    <th>大小</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="demoList"></tbody>
+            </table>
+        </div>
+    </div>
+<!--<div class="container" id="container">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-md-12">-->
+<!--                <input type="file" multiple id="ssi-upload"/>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+    <div class="img-list">
+        <div class="layui-fluid" style="padding:0">
+            <div class="layui-row layui-col-space30 space" id="imageId">
+                <div class="layui-col-xs12 layui-col-sm4 layui-col-md4" th:each="album:${albumInfo.album}"
+                     th:id="${'all_'+album.id}">
+                    <div class="item">
+                        <img th:src="${album.albumPic}" style="width: 200px;height:180px">
+                        <div class="cont-text">
+                            <div class="data" th:text="${#dates.format(album.createTime,'yyyy/MM/dd HH:mm')}"></div>
+                            <p class="address"><i class="layui-icon layui-icon-delete"></i><span th:id="${album.id}"
+                                                                                                 onclick="deleteAlbum(this)">删除</span>
+                            </p>
+                            <p class="briefly" th:text="${album.title}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="layui-hide" id="index" th:text="${page.getCurrent()}"></p>
+        <p class="layui-hide" id="size" th:text="${page.getSize()}"></p>
+        <p class="layui-hide" id="total" th:text="${page.getPages()}"></p>
+        <div style="margin-left: 500px;">
+            <div class="my-page" style="height: 50px;"></div>
+        </div>
+    </div>
+</div>
+<div th:replace="/friend/html/foot :: copyright" style="width: 100%;height: 300px" frameborder="0" height="300px"></div>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" th:src="@{/friend/res/layui/layui.js}"></script>
+<script type="text/javascript" th:src="@{/friend/res/my-page/my-page.js}"></script>
+<script type="text/javascript">
+    $(function () {
+        $(".layui-table").hide();
+    });
+    let total = $('#total').html();
+    let index = $('#index').html();
+    let size = $('#size').html();
+    layui.use('upload', function () {
+        var upload = layui.upload;
+        //多文件列表示例
+        let demoListView = $('#demoList')
+            , uploadListIns = upload.render({
+             elem: '#testList'
+            , url: '/user-album/addAlbumInfo' //改成您自己的上传接口
+            , accept: 'file'
+            , multiple: true
+            , auto: false
+            , data: {"title": $("#title").val()}
+            , bindAction: '#testListAction'
+            , before: function () {
+                this.data = {
+                    title: $("#title").val()
+                }
+            }
+            , choose: function (obj) {
+                var files = this.files = obj.pushFile(); //将每次选择的文件追加到文件队列
+                //读取本地文件
+                obj.preview(function (index, file, result) {
+                    $(".layui-table").show();
+                    var tr = $(['<tr id="upload-' + index + '">'
+                        , '<td>' + file.name + '</td>'
+                        , '<td>' + (file.size / 1024).toFixed(1) + 'kb</td>'
+                        , '<td>等待上传</td>'
+                        , '<td>'
+                        , '<button class="layui-btn layui-btn-xs demo-reload layui-hide">重传</button>'
+                        , '<button class="layui-btn layui-btn-xs layui-btn-danger demo-delete">删除</button>'
+                        , '</td>'
+                        , '</tr>'].join(''));
+
+                    //单个重传
+                    tr.find('.demo-reload').on('click', function () {
+                        obj.upload(index, file);
+                    });
+
+                    //删除
+                    tr.find('.demo-delete').on('click', function () {
+                        delete files[index]; //删除对应的文件
+                        tr.remove();
+                        uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+                        if ($('table').find('tr').length == 1) {
+                            $(".layui-table").hide();
+                        }
+                    });
+                    demoListView.append(tr);
+                });
+            }
+            , done: function (res, index, upload) {
+                if (res.status == 200) { //上传成功
+                    console.log(res.data)
+                    var tr = demoListView.find('tr#upload-' + index)
+                        , tds = tr.children();
+                    tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
+                    tds.eq(3).html(''); //清空操作
+
+                    var imageId = $("#imageId");
+                    var imageHtml = "";
+                    imageHtml += '<div class="layui-col-xs12 layui-col-sm4 layui-col-md4" id="all_' + res.data.id + '">';
+                    imageHtml += '<div class="item"><img src="' + res.data.albumPic + '" style="width: 200px;height:180px">';
+                    imageHtml += '<div class="cont-text"><div class="data">'+res.data.time+'</div>';
+                    imageHtml += ' <p class="address"><i class="layui-icon layui-icon-delete"></i><span id="' + res.data.id + '" ' +
+                        'onclick="deleteAlbum(this)">删除</span></p> <p class="briefly">' + res.data.title + '</p>';
+                    imageHtml += '</div></div></div>';
+                    imageId.append(imageHtml);
+                    return delete this.files[index]; //删除文件队列已经上传成功的文件
+
+                }
+                this.error(index, upload);
+            }
+            , error: function (index, upload) {
+                var tr = demoListView.find('tr#upload-' + index)
+                    , tds = tr.children();
+                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                tds.eq(3).find('.demo-reload').removeClass('layui-hide'); //显示重传
+            }
+        });
+
+    });
+
+    /**
+     * 删除图片
+     * @param e
+     */
+    function deleteAlbum(e) {
+        layer.confirm('是否确认删除？', function (index) {
+        $.get("/user-album/deleteAlbumPic", {"id": e.id+''},
+            function (data) {
+                console.log(e.id)
+                if (data.status == 200) {
+                    $("#all_" + e.id).remove();
+                }
+            }
+        );
+       layer.close(index);
+    })
+    }
+
+    myPageInit({
+        pages: total,
+        currentPage: index,
+        element: '.my-page',
+        callback: function (page) {
+            console.log("当前页:", page);
+            if(page!==parseInt(index)){
+                window.location.href="/user-album/queryAlbumInfo?pageIndex="+page+"&pageSize="+size;
+                return false;
+            }
+        }
+    });
+</script>
+</body>
+</html>

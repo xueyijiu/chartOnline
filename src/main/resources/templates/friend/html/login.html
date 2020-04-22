@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<title>登录</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+<link href="https://cdn.bootcss.com/bootstrap-validator/0.5.3/css/bootstrapValidator.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/layui/css/layui.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/friend/res/css/main.css}">
+
+<!--加载meta IE兼容文件-->
+<!--[if lt IE 9]>-->
+<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+<body>
+<div class="header" th:fragment="header" style="height: 40px;line-height: 40px;">
+    <div class="menu-btn">
+        <div class="menu"></div>
+    </div>
+    <h1 class="logo">
+        <a th:href="@{index.html}">
+            <span>交友网</span>
+        </a>
+    </h1>
+    <div class="nav">
+        <a th:href="@{/loginInfo}"th:text="(${session.username}!= null) and (${session.role}==2)?${session.username}:'登录'"></a>
+        <a th:href="@{/registerInfo}" th:text="(${session.username}!= null) and (${session.role}==2)?'':'注册'"></a>
+        <a th:href="@{/userinfo/logout}" th:if="(${session.username}!= null) and (${session.role}==2)">退了</a>
+    </div>
+
+    <p class="welcome-text">
+        欢迎来到<span class="name">交友网</span>
+    </p>
+</div>
+
+<div class="banner" th:fragment="banner">
+    <div class="cont w1000">
+        <div class="title">
+            <h3>YOU<br/>ME</h3>
+            <h4>well-balanced heart</h4>
+        </div>
+    </div>
+</div>
+<div class="row clearfix" style="margin-left: 430px;margin-top:30px;">
+    <div class="col-md-4 column">
+        <form class="loginForm" id="loginForm">
+            <div class="form-group">
+                <label>账号</label><input type="tel" class="form-control username" name="username" placeholder="电话号码/账户"/>
+            </div>
+
+            <div class="form-group">
+                <label>密码</label><input type="password" class="form-control password" name="password" placeholder="填入密码"/>
+                <span class="help-block" style="color: red" th:if="${param.error}" th:text="账号或密码错误请重新输入"></span>
+            </div>
+            <!--            <div class="form-group help">-->
+            <!--                <input type="text" class="form-control" name="verifyCode" placeholder="验证码" required>-->
+            <!--            </div>-->
+            <div class="form-group">
+                <!--                <img src="getVerifyCode" title="看不清，请点我" onclick="refresh(this)" onmouseover="mouseover(this)"/>-->
+                <!--                <label style="margin-left: 50px"><input type="checkbox" name="remember-me"/>自动登录</label>-->
+                <a href="/registerInfo" style="margin-left: 50px">没有账号？立即注册</a>
+            </div>
+            <button type="submit" class="btn btn-primary loginSubmit" id="loginSubmit">登录</button>
+        </form>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap-validator/0.5.3/js/bootstrapValidator.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap-validator/0.5.3/js/bootstrapValidator.min.js"></script>
+<script th:src="@{/friend/res/js/util/commons/login.js}"></script>
+<script>
+    // $(function () {
+    //     var fd = new FormData(document.getElementById("loginForm"));
+    //     $("#loginSubmit").click(function () {
+    //         $.ajax({
+    //             //几个参数需要注意一下
+    //             type: "POST",//方法类型
+    //             dataType: "json",//预期服务器返回的数据类型
+    //             url: "/userinfo/login" ,//url
+    //             processData: false, //告诉jQuery不要去处理发送的数据
+    //             contentType: false, //告诉jQuery不要去设置Content-Type请求头
+    //             data: fd,
+    //             success: function (result) {
+    //                 console.log(result);//打印服务端返回的数据(调试用)
+    //                 if (result.status == 200) {
+    //                     window.location.href="./html/login.html"
+    //                 }else{
+    //                     alert(result.message)
+    //                 }
+    //                 ;
+    //             },
+    //             error : function() {
+    //                 alert("异常！"+result);
+    //             }
+    //         });
+    //         return false;
+    //     })
+    // });
+</script>
+<div th:replace="/friend/html/foot :: copyright" style="width: 100%;height: 300px" frameborder="0" height="300px"></div>
+</body>
+</html>
