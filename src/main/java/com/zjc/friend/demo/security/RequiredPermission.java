@@ -10,6 +10,9 @@ import java.lang.annotation.*;
  * @Version: $
  */
 
+/**
+ * 自定义注解 （根据角色来拦截访问）
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited

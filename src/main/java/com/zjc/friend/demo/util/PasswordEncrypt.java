@@ -12,6 +12,10 @@ import java.util.Base64;
  * @ Modified By：
  * @Version: $
  */
+
+/**
+ * 给md5密码加密的信息封装成方法
+ */
 public class PasswordEncrypt {
 
     /**

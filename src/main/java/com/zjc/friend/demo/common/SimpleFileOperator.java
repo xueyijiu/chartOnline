@@ -25,6 +25,9 @@ import java.util.regex.Matcher;
 @Component
 public class SimpleFileOperator implements FileOperator {
 
+    /**
+     * 保存图片的地址
+     */
     @Value("${com.zjc.friend.image-path}")
     private String imgPath;
 
@@ -34,22 +37,27 @@ public class SimpleFileOperator implements FileOperator {
 
     @Override
     public FileResult uploadFile(InputStream in, String fileName) {
+        //获得文件的相对路径
         String relativePath = genRelativePath(fileName);
+        //把相对路径中“/”符号，全改成系统定义文件路径符号（ Matcher.quoteReplacement(File.separator)--》windows就会为"\\"linux系统就为“/”）
         String partPath = relativePath.replaceAll("/", Matcher.quoteReplacement(File.separator));
         FileResult fr = new FileResult();
         try {
             String fullPath = imgPath + partPath;
             File file = new File(fullPath);
+            //根据相对路径生成文件夹
             file.getParentFile().mkdirs();
             if (createTmpFile) {
                 String tmpDir = System.getProperty("java.io.tmpdir");
                 String tmpFullPath = tmpDir + partPath;
                 File tmp = new File(tmpFullPath);
                 tmp.getParentFile().mkdirs();
+                //保存图片
                 FileCopyUtils.copy(in, new FileOutputStream(tmp));
                 FileCopyUtils.copy(tmp, file);
                 fr.setLocalFile(tmp);
             } else {
+                //保存图片
                 FileCopyUtils.copy(in, new FileOutputStream(file));
                 fr.setLocalFile(file);
             }
@@ -61,32 +69,6 @@ public class SimpleFileOperator implements FileOperator {
         return fr;
     }
 
-    @Override
-    public Map<String, String> uploadFiles(MultipartFile[] files) {
-        String filePath = "";
-        List<Map> list = new ArrayList<>();
-        Map<String, String> map = new HashMap();
-        if (files == null || files.length == 0) {
-            return null;
-        }
-        if (imgPath.endsWith("/")) {
-            imgPath = imgPath.substring(0, imgPath.length() - 1);
-        }
-        for (MultipartFile file : files) {
-            filePath = imgPath + file.getOriginalFilename();
-            makeDir(imgPath);
-            File dest = new File(filePath);
-            try {
-                file.transferTo(dest);
-            } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException("文件操作失败", e);
-            }
-            map.put(file.getOriginalFilename(), filePath);
-//            list.add(map);
-        }
-        return map;
-    }
 
     /**
      * 确保目录存在，不存在则创建

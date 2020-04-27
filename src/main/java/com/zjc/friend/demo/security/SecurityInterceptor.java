@@ -22,6 +22,11 @@ import java.util.Set;
  * @ Modified By：
  * @Version: $
  */
+
+/**
+ * 该系统的拦截器 如果用户没登陆那么session就会为空，那么就会自定义到登陆界面
+ * 如果登录人的角色权限不够那么也不能去访问
+ */
 public class SecurityInterceptor implements HandlerInterceptor {
 
     @Autowired

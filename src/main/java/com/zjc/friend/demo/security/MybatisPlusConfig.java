@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @MapperScan("com.zjc.friend.demo.mapper")
 public class MybatisPlusConfig {
     /**
-     * 分页插件
+     * mybatisplus分页插件
      */
     @Bean
     public PaginationInterceptor paginationInterceptor() {

@@ -12,6 +12,10 @@ import java.util.Date;
  * @ Modified By：
  * @Version: $
  */
+
+/**
+ * 时间的工具类
+ */
 public class DateUtil {
 
     /**

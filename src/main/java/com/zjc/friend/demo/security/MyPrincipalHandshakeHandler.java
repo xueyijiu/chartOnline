@@ -20,6 +20,10 @@ import java.util.Map;
  * @ Modified By：
  * @Version: $
  */
+
+/**
+ * 设置登录信息 给Principal赋值 Principal（它在单人聊天中需要，如果没有它就不能实现在线单人聊天）
+ */
 @Component
 @Slf4j
 public class MyPrincipalHandshakeHandler extends DefaultHandshakeHandler {

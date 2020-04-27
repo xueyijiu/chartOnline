@@ -25,6 +25,7 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         HttpSession httpSession = getSession(request);
+        //获取用户登录session
         String user = (String)httpSession.getAttribute("username");
         if(StringUtils.isEmpty(user)){
             log.error("未登录系统，禁止登录websocket!");

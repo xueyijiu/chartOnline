@@ -263,7 +263,6 @@ public class FriendRequestController {
         if (responseObject.getStatus() == 200) {
             model.addAttribute("request", responseObject.getData());
         }
-        System.out.println(categoryList);
         model.addAttribute("category", categoryList);
         model.addAttribute("all", all);// 查看好友请求个数
         return new ModelAndView("/friend/html/friend", "info", model);
@@ -276,28 +275,35 @@ public class FriendRequestController {
      */
     @RequestMapping("/queryApplyFriend")
     public ResponseObject queryApplyFriend(int all) {
+        //查找当前登录人的信息
         Userinfo one = currentUser.getUserInfo(userService);
         QueryWrapper<FriendRequest> wrapper = new QueryWrapper<>();
         wrapper.and(queryWrapper -> queryWrapper.eq("user_id", one.getId()).or().eq("friend_id", one.getId()));
         wrapper.orderByDesc("create_time");
         wrapper.eq("status", 0);
         wrapper.eq("code", true);
+        //查找好友信息 select * from friend_request where status=0 and code=1 order by create_time desc
         List<FriendRequest> list = friendRequestService.list(wrapper);
         List<FriendRequest> friendRequestList = new ArrayList<>();
         Userinfo byId = null;
         for (FriendRequest request : list) {
             if (one.getId().equals(request.getUserId())) {
+                //根据好友的id去查找好友的信息
                 byId = userService.getById(request.getFriendId());
             } else {
+                //根据好友的id去查找好友的信息
                 byId = userService.getById(request.getUserId());
             }
+            //判断是否有好友请求 如果等于0 就加一
             if (request.getStatus() == 0) {
                 all++;
             }
             if (null != byId.getUserPic()) {
+                //给用户的头像加地址前缀
                 byId.setUserPic(webRoot + byId.getUserPic());
             }
             request.setUserinfo(byId);
+            //封装好友信息
             friendRequestList.add(request);
         }
         return new ResponseObject(StatusCode.SUCCESS.getCode(), "", friendRequestList);
@@ -306,17 +312,20 @@ public class FriendRequestController {
     /**
      * 更新好友申请
      *
-     * @param id
-     * @param status
+     * @param id 好友id
+     * @param status 状态
+     * @param status 分组id
+     * @param commentName 备注
      * @return
      */
     @RequestMapping("/updateApplyFriend")
     @ResponseBody
     @Transactional
     public ResponseObject updateApplyFriend(@RequestParam Long id, @RequestParam Integer status, @RequestParam(required = false) Long catId, @RequestParam(required = false) String commentName) {
+        //当前登录人信息
         Userinfo userInfo = currentUser.getUserInfo(userService);
+        //通过登录人的id去查找好友请求信息
         FriendRequest byId = friendRequestService.getById(id);
-        System.out.println(byId);
         UpdateWrapper<FriendRequest> wrapper = new UpdateWrapper<>();
         wrapper.set("request_status", status);
         wrapper.eq("id", id);
@@ -324,7 +333,9 @@ public class FriendRequestController {
         catId = getCatId(id, status, catId, userInfo.getId()); // 判断是否有分组
         System.out.println("catId:" + catId);
         // wrapper.set("category_id", catId);
+        //更新好友请求 update set status=0,request_status=#{status} where id=#{id} from id=#{id}
         friendRequestService.update(wrapper);
+        //如果同意添加为好友 ，那么就在friendrequest表里再添加一条添加好友的记录记录。
         if (status == 1) {
             FriendRequest request = new FriendRequest();
             request.setRequestStatus(1);
@@ -342,16 +353,27 @@ public class FriendRequestController {
         return new ResponseObject(StatusCode.SUCCESS.getCode(), "成功!");
     }
 
+    /**
+     * 查找是否有分组
+     * @param id 用户id
+     * @param status 是否同意添加好友 1是同意，二是不同意
+     * @param catId 分组id
+     * @param userId 好友id
+     * @return
+     */
     private Long getCatId(Long id, Integer status, @RequestParam(required = false) Long catId, Long userId) {
         if (1 == status) {
             QueryWrapper<FriendCategory> categoryQueryWrapper = new QueryWrapper<>();
             categoryQueryWrapper.eq("user_id", userId);
+            //查找好友分组列表
             List<FriendCategory> list = friendCategoryService.list(categoryQueryWrapper);
             if (list.size() > 0) {
+                //如果传过来的分组id等于空，且自己有好友分组，那么就默认分配到第一个分组
                 if (null == catId) {
                     catId = list.get(0).getId();
                 }
             } else {
+                //如果改用户没有分组信息，那么就默认生成一个“我得好友”分组
                 FriendCategory category = new FriendCategory();
                 category.setCreateTime(new Date());
                 category.setUserId(userId);
@@ -367,9 +389,9 @@ public class FriendRequestController {
     }
 
     /**
-     * 删除好友信息(逻辑删除)
+     * 删除好友信息(逻辑删除-->只是改变好友状态)
      *
-     * @param id
+     * @param id 好友id
      * @return
      */
     @RequestMapping("/deleteFriend")
@@ -378,6 +400,8 @@ public class FriendRequestController {
         UpdateWrapper<FriendRequest> wrapper = new UpdateWrapper<>();
         wrapper.set("status", 1);
         wrapper.eq("id", id);
+        //update set status=1 where id=#{id} from friend_request;
+        //更新好友状态
         boolean update = friendRequestService.update(wrapper);
         if (!update) {
             return new ResponseObject(StatusCode.FAILED.getCode(), "删除失败!");

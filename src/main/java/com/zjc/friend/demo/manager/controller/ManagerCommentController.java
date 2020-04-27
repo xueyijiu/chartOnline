@@ -50,15 +50,17 @@ public class ManagerCommentController {
     /**
      * 监控消息
      *
-     * @param message
+     * @param message 传来的消息
      * @return
      */
     @RequestMapping("/intercept")
     public ResponseObject intercept(String message) {
+        //查找control_table 表获得全部违规信息
         List<ControlTable> controlTables = controlTableService.list();
         if (controlTables.size() > 0) {
             for (ControlTable table : controlTables) {
-                if (table.getContent().contains(message)) {
+                //自己发的评论信息或者动态信息包含了违规字段，那么就不能发布
+                if (message.indexOf(table.getContent())!=-1) {
                     return new ResponseObject(400, "你的言语不能通过该系统！");
                 }
             }
@@ -69,9 +71,9 @@ public class ManagerCommentController {
     /**
      * 查找评论列表
      *
-     * @param page
-     * @param limit
-     * @param message
+     * @param page 当前页
+     * @param limit 分页的数量
+     * @param message 需要查找的信息
      * @param startTime
      * @param endTime
      * @return

@@ -154,21 +154,26 @@ public class UserInfoController {
          * select * from userinfo u where (u.username=#{username} or u.phone=#{phone}) and password=#{password}
          */
         wrapper.and(queryWrapper -> queryWrapper.eq("username", username).or().eq("phone", username));
+        //PasswordEncrypt.encodeByMd5(password)--》给床过来的密码进行MD5加密
         wrapper.eq("password", PasswordEncrypt.encodeByMd5(password));
         Userinfo userinfo = userService.getOne(wrapper);
+        //如果通过用户账号/电话号码和密码查找为空，那么就是没有这人，就登陆失败
         if (null == userinfo) {
             return new ResponseObject(StatusCode.FAILED.getCode(), "登陆失败");
         }
+        //如果状态为false/0,n那么该用户就是被禁用
         if(!userinfo.getStatus()){
             return new ResponseObject(StatusCode.FAILED.getCode(),"你已经被禁用!");
         }
         QueryWrapper<SysUserRole> wrapper1=new QueryWrapper<>();
         wrapper1.eq("user_id",userinfo.getId());
+        //查找改用户的角色信息，通过该登录id
         SysUserRole one = sysUserRoleService.getOne(wrapper1);
-        System.out.println(one);
+        //如果用户角色为1(管理员)，那么就登陆失败。
         if(one.getRoleId().equals(1l)){
             return new ResponseObject(StatusCode.FAILED.getCode(), "登陆失败", userinfo);
         }
+        //存储session 信息
         HttpSession session = httpServletRequest.getSession();
             session.setAttribute("username",username);
             session.setAttribute("role",one.getRoleId());
@@ -182,18 +187,21 @@ public class UserInfoController {
      */
     @RequestMapping("/personInfo")
     public ModelAndView userInfo(Model model) {
+        //查找该用户的信息
         Userinfo userInfo = currentUser.getUserInfo(userService);
+        //如果用户的图片不为空，就加上获取图片的前缀 http://loalhost:8081
         if(StringUtils.isNotBlank(userInfo.getUserPic())){
             userInfo.setUserPic(webRoot + userInfo.getUserPic());
         }
+        //返回个人信息给/friend/html/personal页面
         model.addAttribute("info", userInfo);
         return new ModelAndView("/friend/html/personal", "user", model);
     }
 
     /**
      * 更新用户信息
-     *
-     * @param user
+     * @param icon 上传用户图标
+     * @param user 用户的信息
      * @return
      */
     @RequestMapping("/updateUserInfo")
@@ -201,25 +209,29 @@ public class UserInfoController {
     @Transactional
     public ResponseObject updateUserInfo(Userinfo user, @RequestParam(required = false) MultipartFile icon) throws Exception {
         Userinfo userInfo = currentUser.getUserInfo(userService);
-        System.out.println("生日:" + icon.getOriginalFilename());
         UpdateWrapper<Userinfo> wrapper = new UpdateWrapper<>();
+        //判断用户上传的图片用户名不等于null，那么就可以判断用户上传了图片，然后就进行存储
         if (!icon.getOriginalFilename().isEmpty()) {
+            //保存上传文件
             FileResult fileResult = fileOperator.uploadFile(icon.getInputStream(), icon.getOriginalFilename());
+            //如果上传保存的路径不为空，那么就保存路径
             if (null != fileResult) {
                 wrapper.set("user_pic", fileResult.getRelativePath());
             }
         }
-
+        //如果上传的昵称名不为空，且不等于原来的名称，则更新昵称
         if (StringUtils.isNotBlank(user.getPetName())) {
             if (!user.getPetName().equals(userInfo.getPetName())) {
-                ResponseObject responseObject = verificationUsername(user.getUsername());
-                if (responseObject.getStatus() != 200) {
-                    return responseObject;
-                }
+//                ResponseObject responseObject = verificationUsername(user.getUsername());
+//                if (responseObject.getStatus() != 200) {
+//                    return responseObject;
+//               }
                 wrapper.set("pet_name", user.getPetName());
             }
         }
+        //如果电话号码不为空，且不等于原来的电话号码，且该电话号码还没人注册，那么就
         if (StringUtils.isNotBlank(user.getPhone())) {
+
             if (!user.getPhone().equals(userInfo.getPhone())) {
                 ResponseObject responseObject = verificationPhone(user.getPhone());
                 if (responseObject.getStatus() != 200) {
@@ -228,21 +240,26 @@ public class UserInfoController {
                 wrapper.set("phone", user.getPhone());
             }
         }
-        if (StringUtils.isNotBlank(user.getUserPic())) {
-            wrapper.set("user_pic", user.getUserPic());
-        }
+
+//        if (StringUtils.isNotBlank(user.getUserPic())) {
+//            wrapper.set("user_pic", user.getUserPic());
+//        }
+        //如果地址不等于空
         if (StringUtils.isNotBlank(user.getAddress())) {
             wrapper.set("address", user.getAddress());
         }
+        //如果生日不为空
         if (StringUtils.isNotBlank(user.getBirthdayTime())) {
             Long aLong = DateUtil.dateToStamp(user.getBirthdayTime());
             Date date = DateUtil.strToDate(user.getBirthdayTime());
             wrapper.set("birthday", date);
         }
+        //如果性别不为空
         if (StringUtils.isNotBlank(user.getSex())) {
             wrapper.set("sex", user.getSex());
         }
         wrapper.eq("id", userInfo.getId());
+        //更新用户信息
         userService.update(wrapper);
         user.setUserPic(webRoot + user.getUserPic());
         return new ResponseObject(StatusCode.SUCCESS.getCode(), "更新成功", user);
@@ -251,8 +268,8 @@ public class UserInfoController {
     /**
      * 更新密码
      *
-     * @param password
-     * @param passwordAgain
+     * @param password 密码
+     * @param passwordAgain 确认密码
      * @return
      */
     @RequestMapping("/updatePassword")
@@ -262,10 +279,12 @@ public class UserInfoController {
             return new ResponseObject(StatusCode.FAILED.getCode(), "两个密码不一致!");
         }
         Userinfo userInfo = currentUser.getUserInfo(userService);
+        //给密码MD5加密
         String encode = PasswordEncrypt.encodeByMd5(password);
         UpdateWrapper<Userinfo> wrapper = new UpdateWrapper<>();
         wrapper.set("password", encode);
         wrapper.eq("id",userInfo.getId());
+        //更新用户信息
         boolean update = userService.update(wrapper);
         if (!update) {
             return new ResponseObject(StatusCode.FAILED.getCode(), "更新失败!");
@@ -298,14 +317,16 @@ public class UserInfoController {
         }
 
     /**
-     *
+     *退出登录
       * @param session
      * @param sessionStatus
      * @return
      */
     @RequestMapping("/logout")
     public String logout(HttpSession session, SessionStatus sessionStatus) {
+        //删除登录session
         session.removeAttribute("username");
+        //删除登录role
         session.removeAttribute("role");
         sessionStatus.setComplete();
         return "redirect:/login";
@@ -320,7 +341,7 @@ public class UserInfoController {
     /**
      * 查找用户信息
      *
-     * @param id
+     * @param id 用户id
      * @return
      */
     @RequestMapping("/queryUserById")

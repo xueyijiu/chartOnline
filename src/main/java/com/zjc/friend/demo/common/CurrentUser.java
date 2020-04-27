@@ -16,7 +16,13 @@ public class CurrentUser {
     @Autowired
     private  HttpServletRequest httpServletRequest;
 
+    /**
+     * 查询登录的session
+     * @param httpServletRequest
+     * @return
+     */
     public  String getCurrentUser(HttpServletRequest httpServletRequest) {
+        //查询登录的session获得登录名
         String userName = (String)httpServletRequest.getSession().getAttribute("username");
         return userName;
     }
@@ -54,11 +60,18 @@ public class CurrentUser {
         QueryWrapper<Userinfo> wrapper = new QueryWrapper<>();
         wrapper.eq("username",getCurrentUser(httpServletRequest));
         wrapper.eq("status",true);
+        //获得登录人信息
         return userService.getOne(wrapper);
     }
+
+    /**
+     * 获得管理员登录信息
+     * @param userService
+     * @return
+     */
     public  Userinfo getAdminInfo(IUserinfoService userService) {
         QueryWrapper<Userinfo> wrapper = new QueryWrapper<>();
-        wrapper.eq("adminName",getCurrentUser(httpServletRequest));
+        wrapper.eq("adminName", httpServletRequest.getSession().getAttribute("adminUser"));
         wrapper.eq("status",true);
         return userService.getOne(wrapper);
     }

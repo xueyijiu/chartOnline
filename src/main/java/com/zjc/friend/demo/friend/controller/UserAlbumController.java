@@ -76,9 +76,10 @@ public class UserAlbumController {
         QueryWrapper<UserAlbum> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userInfo.getId());
         wrapper.orderByAsc("create_time");
-        Page page = new Page();
-        page.setCurrent(pageIndex);
-        page.setSize(pageSize);
+        Page page = new Page(); //实例化一个分页类
+        page.setCurrent(pageIndex); //当前页数
+        page.setSize(pageSize);//一页查找几条数据
+        //查找当前用户的相册信息 select * from user_album where user_id=#{userInfo.getId()} limit page.getCurrent,page.getSize();
         IPage<UserAlbum> page1 = userAlbumService.page(page, wrapper);
         List<UserAlbum> albums = new ArrayList<>();
         for (int i = 0; i < page1.getRecords().size(); i++) {
@@ -103,6 +104,7 @@ public class UserAlbumController {
     @Transactional
     public ResponseObject addAlbumInfo(@RequestParam("file") MultipartFile files, @RequestParam String title) throws IOException {
         Userinfo userInfo = currentUser.getUserInfo(userService);
+        //存储相片，并把相片信息封装到类里面
         FileResult fileResult = fileOperator.uploadFile(files.getInputStream(), files.getOriginalFilename());
         UserAlbum album = new UserAlbum();
         if (null != fileResult) {
@@ -111,13 +113,14 @@ public class UserAlbumController {
             album.setCreateTime(new Date());
             album.setTitle(title);
             album.setPicName(files.getOriginalFilename());
+            //保存相册
             boolean b = userAlbumService.save(album);
             if (!b) {
                 throw new RuntimeException("添加错误!");
             }
         }
-        Date d = new Date();
         album.setAlbumPic(webRoot + album.getAlbumPic());
+        //返回添加成功的相册信息，并格式化时间
         album.setTime(new DateFormatter("yyyy/MM/dd hh:mm:ss").print(album.getCreateTime(), Locale.CHINA));
         return new ResponseObject(StatusCode.SUCCESS.getCode(), "添加成功", album);
     }
@@ -125,13 +128,14 @@ public class UserAlbumController {
     /**
      * 删除相册图片
      *
-     * @param id
+     * @param id 相片id
      * @return
      */
     @RequestMapping("/deleteAlbumPic")
     @Transactional
     @ResponseBody
     public ResponseObject deleteAlbumPic(@RequestParam String id) {
+        //删除相片信息
         boolean b = userAlbumService.removeById(id);
         if (!b) {
             throw new RuntimeException("删除失败");

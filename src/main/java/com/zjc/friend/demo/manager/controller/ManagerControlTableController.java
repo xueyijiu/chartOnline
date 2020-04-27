@@ -43,9 +43,9 @@ public class ManagerControlTableController {
 
     /**
      * 查找违规字段
-     * @param message
-     * @param page
-     * @param limit
+     * @param message 查找违规字
+     * @param page 当前页
+     * @param limit 一页多少条数据
      * @return
      */
     @RequestMapping("/violationList")
@@ -55,22 +55,25 @@ public class ManagerControlTableController {
         Page<ControlTable> page1=new Page<>();
         page1.setCurrent(page);
         page1.setSize(limit);
+        //如果查找的违规字端不为空，就做模糊查询
         if(StringUtils.isNotBlank(message)){
             wrapper.like("content",message);
         }
         if(null!=status){
             wrapper.eq("status",status);
         }
+        //select * from control_table where content like '%#{message}%' and status=#{status}
         IPage<ControlTable> page2 = controlTableService.page(page1, wrapper);
         List<ControlTable> controlTableList=new ArrayList<>();
         for (ControlTable controlTable:page2.getRecords()) {
-            System.out.println(controlTable);
+            //如果状态为真那么就给它赋值为可用，否则不可用
             if(controlTable.getStatus()){
                 controlTable.setStatusString("可用");
             }
             else{
                 controlTable.setStatusString("不可用");
             }
+            //把结果添加到list集合
             controlTableList.add(controlTable);
         }
         Map<String, Object> data = new HashMap<>();
@@ -85,8 +88,8 @@ public class ManagerControlTableController {
 
     /**
      * 新增违规内容
-     * @param content
-     * @param status
+     * @param content 违规字内容
+     * @param status 可用状态
      * @return
      */
     @RequestMapping("/insertViolation")
@@ -94,20 +97,22 @@ public class ManagerControlTableController {
         ControlTable controlTable=new ControlTable();
         controlTable.setStatus(status);
         controlTable.setContent(content);
+        //添加违规字到数据库
         controlTableService.save(controlTable);
         return new ResponseObject(StatusCode.SUCCESS.getCode(),"");
     }
 
     /**
      * 更新违规内容
-     * @param content
-     * @param status
+     * @param content 违规字段
+     * @param status 可用状态
      * @return
      */
     @RequestMapping("/updateViolation")
     public ResponseObject insertViolation(@RequestParam Long id, @RequestParam(required = false) Boolean status,
                                           @RequestParam(required = false) String content){
         UpdateWrapper<ControlTable> wrapper=new UpdateWrapper<>();
+        //如果status不等于null 就更新状态
         if(null!=status){
             wrapper.set("status",status);
         }
@@ -115,6 +120,7 @@ public class ManagerControlTableController {
             wrapper.set("content",content);
         }
         wrapper.eq("id",id);
+        //update status=#{status},content=#{content} where id=#{id}
        controlTableService.update(wrapper);
         return new ResponseObject(StatusCode.SUCCESS.getCode(),"");
     }
@@ -126,6 +132,7 @@ public class ManagerControlTableController {
      */
     @RequestMapping("/deleteViolation")
     public ResponseObject deleteViolation(@RequestParam Long id){
+        //删除违规内容
         controlTableService.removeById(id);
         return new ResponseObject(StatusCode.SUCCESS.getCode(),"");
     }
@@ -137,8 +144,9 @@ public class ManagerControlTableController {
      */
     @RequestMapping("/updateBachViolation")
     @Transactional
-    public ResponseObject updateBachViolation(String data ,Boolean status){
+    public ResponseObject updateBachViolation(@RequestParam String data ,@RequestParam Boolean status){
         Gson gson=new Gson();
+        //解析data字段通过gson，data为json字段
        List<ControlTable> controlTables=gson.fromJson(data, new TypeToken<List<ControlTable>>() {}.getType());
         if(controlTables.size()<=0){
             return new ResponseObject(StatusCode.FAILED.getCode(),"系统错误");
@@ -148,6 +156,7 @@ public class ManagerControlTableController {
             UpdateWrapper<ControlTable> wrapper=new UpdateWrapper<>();
             wrapper.set("status",status);
             wrapper.eq("id",controlTable.getId());
+            //更新违规字段
             if(!controlTableService.update(wrapper)){
                 throw new RuntimeException("更新错误");
             }
@@ -164,11 +173,13 @@ public class ManagerControlTableController {
     @Transactional
     public ResponseObject deleteBachViolation(@RequestParam String data){
         Gson gson=new Gson();
+        //通过gson解析json字段
         List<ControlTable> controlTables=gson.fromJson(data, new TypeToken<List<ControlTable>>() {}.getType());
         if(controlTables.size()<=0){
             return new ResponseObject(StatusCode.FAILED.getCode(),"系统错误");
         }
         for (ControlTable controlTable:controlTables) {
+            //删除control_table字段
             if(!controlTableService.removeById(controlTable.getId())){
                 throw  new RuntimeException("删除失败");
             }

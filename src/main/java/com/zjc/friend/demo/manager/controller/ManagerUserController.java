@@ -40,7 +40,7 @@ import java.util.Map;
 @Controller
 @Slf4j
 @RequestMapping("/manage")
-@RequiredPermission(PermissionConstants.ADMIN)
+@RequiredPermission(PermissionConstants.ADMIN) //只有拥有管理员角色的擦还能访问
 public class ManagerUserController {
 
     @Autowired
@@ -53,12 +53,20 @@ public class ManagerUserController {
     private HttpServletRequest httpServletRequest;
 
 
+    /**
+     * 删除用户信息 （逻辑删除）
+     * @param id
+     * @param role
+     * @return
+     */
     @RequestMapping(value = "/deleteUserById")
     @ResponseBody
     public JsonData deleteUserById(Long id, String role) {
+        //判断当前用户是否是管理员
         if (role.equals("ROLE_ADMIN")) {
             return new JsonData(501, "NO");
         }
+        //根据用户id来更新用户信息 status是true表示该用户正常，false该用户被禁用
         UpdateWrapper<Userinfo> wrapper = new UpdateWrapper<>();
         wrapper.set("status", false);
         wrapper.eq("id", id);
@@ -160,17 +168,22 @@ public class ManagerUserController {
          * select * from userinfo u where (u.username=#{username} or u.phone=#{phone}) and password=#{password}
          */
         wrapper.and(queryWrapper -> queryWrapper.eq("username", username).or().eq("phone", username));
+        //把传入的密码进行MD5加密，然后子啊去数据库中查找
         wrapper.eq("password", PasswordEncrypt.encodeByMd5(password));
         Userinfo userinfo = userService.getOne(wrapper);
+        //数据库查不到信息，那么登陆失败
         if (null == userinfo) {
             return new ResponseObject(StatusCode.FAILED.getCode(), "登陆失败");
         }
         QueryWrapper<SysUserRole> wrapper1=new QueryWrapper<>();
         wrapper1.eq("user_id",userinfo.getId());
+        //去角色表中查找信息
         SysUserRole one = sysUserRoleService.getOne(wrapper1);
+        //如果角色表中用户的角色不是管理员那么登录失败
         if(one.getRoleId().equals(2l)){
             return new ResponseObject(StatusCode.FAILED.getCode(), "登陆失败,你不是管理员!", userinfo);
         }
+        //把登录session去除
         HttpSession session = httpServletRequest.getSession();
         session.setAttribute("adminName",username);
         session.setAttribute("role",one.getRoleId());
@@ -185,6 +198,7 @@ public class ManagerUserController {
      */
     @RequestMapping("/logout")
     public ResponseObject logout(HttpSession session, SessionStatus sessionStatus) {
+        //清楚session
         session.removeAttribute("adminName");
         session.removeAttribute("role");
         sessionStatus.setComplete();

@@ -16,6 +16,10 @@ import java.util.Random;
  * @author jitwxs
  * @date 2018/3/29 20:35
  */
+
+/**
+ * 这个类没用哦
+ */
 public class VerifyServlet extends HttpServlet {
 
     private static final long serialVersionUID = -5051097528828603895L;

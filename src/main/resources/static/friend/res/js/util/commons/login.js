@@ -47,7 +47,7 @@
                     success: function (result) {
                         console.log(result);//打印服务端返回的数据(调试用)
                         if (result.status == 200) {
-                            window.location.href="/user-dynamic/allDynamicInfo?pageIndex=1&pageSize=10"
+                            window.location.href="/user-dynamic/allDynamicInfo?pageIndex=1&pageSize=5"
                         }else{
                             alert(result.message)
                         };

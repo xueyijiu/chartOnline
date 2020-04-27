@@ -23,6 +23,10 @@ public class MVCConfig extends WebMvcConfigurerAdapter {
         return new SecurityInterceptor();
     }
 
+    /**
+     * 这个方法是要求系统不拦截即使用户不登陆
+     * @param registry
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(securityInterceptor()).
@@ -47,10 +51,14 @@ public class MVCConfig extends WebMvcConfigurerAdapter {
                 .addPathPatterns("/**");
     }
 
+    /**
+     * springMVC 通过访问路径返回页面
+     * @param registry
+     */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/loginInfo").setViewName("/friend/html/login");
-        registry.addViewController("/").setViewName("/friend/html/top");
+        registry.addViewController("/").setViewName("/user-dynamic/allDynamicInfo?pageIndex=1&pageSize=5");
         registry.addViewController("/registerInfo").setViewName("/friend/html/register");
         registry.addViewController("/manage/loginHtml").setViewName("/manage/login");
         registry.addViewController("/manage").setViewName("/manage/index");

@@ -16,12 +16,4 @@ public interface FileOperator {
      */
     FileResult uploadFile(InputStream in, String fileName);
 
-    /**
-     * 添加多张图片
-     *
-     * @param files
-     * @param
-     * @return
-     */
-    Map<String, String> uploadFiles(MultipartFile[] files);
 }

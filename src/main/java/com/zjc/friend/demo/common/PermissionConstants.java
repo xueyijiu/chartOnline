@@ -9,7 +9,7 @@ package com.zjc.friend.demo.common;
  */
 public class PermissionConstants {
     /**
-     * 需要管理员角色
+     * 需要管理员角色1l(是1和字母l，表示long整形数据)
      */
     public static final long ADMIN = 1l;
 

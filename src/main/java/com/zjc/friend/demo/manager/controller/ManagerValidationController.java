@@ -19,6 +19,11 @@ import javax.annotation.Resource;
  * 校验处理视图
  */
 
+/***
+ * 这个类没用哦
+ * @param
+ * @return
+ */
 @Controller
 @Slf4j
 @RequestMapping("/manage")
@@ -27,6 +32,7 @@ public class ManagerValidationController {
 
     @Autowired
     private IUserinfoService userService;
+
 
 
     @RequestMapping(value = "/checkNameIsExistOrNot")
